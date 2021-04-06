@@ -9,6 +9,8 @@ namespace FilesComparator.FileInfo
 {
     public class FileInfoProvider : IFileInfoProvider
     {
+        private const int ReadBufferSize = 1024 * sizeof(long);
+
         public async Task<ICollection<FileInfo>> GetFilesInfo(string rootFolder)
         {
             var files = Directory.GetFiles(rootFolder, string.Empty, SearchOption.AllDirectories);
@@ -38,15 +40,14 @@ namespace FilesComparator.FileInfo
                 return false;
             }
             
-            const int bufferSize = 1024 * sizeof(long);
-            var firstBuffer = new byte[bufferSize];
-            var secondBuffer = new byte[bufferSize];
+            var firstBuffer = new byte[ReadBufferSize];
+            var secondBuffer = new byte[ReadBufferSize];
 
             while (isEqual && firstFileStream.Position < firstFileStream.Length)
             {
                 await Task.WhenAll(
-                    firstFileStream.ReadAsync(firstBuffer, 0, bufferSize),
-                    secondFileStream.ReadAsync(secondBuffer, 0, bufferSize));
+                    firstFileStream.ReadAsync(firstBuffer, 0, ReadBufferSize),
+                    secondFileStream.ReadAsync(secondBuffer, 0, ReadBufferSize));
 
                 isEqual = firstBuffer.SequenceEqual(secondBuffer);
             }
